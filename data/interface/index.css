@@ -190,6 +190,10 @@ input[value="0"] {
 	vertical-align: middle;
 }
 
+html[context="webapp"] .toolbar {
+  display: none;
+}
+
 @media (max-width: 350px) {
   input[type="button"] {
     font-size: 12px;
