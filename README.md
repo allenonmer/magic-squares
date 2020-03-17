@@ -5,7 +5,7 @@ You can install this app as a PWA on your mobile device, moreover, it is availab
 Chrome: https://chrome.google.com/webstore/detail/magic-squares/oohpeiokibjancjoajhgdpoefeokepjb  
 Firefox: https://addons.mozilla.org/en-US/firefox/addon/magic-squares/  
 Opera: https://addons.opera.com/en/extensions/details/magic-squares/  
-Webapp & PWA:   
+Webapp & PWA: https://webbrowsertools.com/magic-squares/  
 
 ---------------------------------------------------------------
 
