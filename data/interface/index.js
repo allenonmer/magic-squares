@@ -1,7 +1,67 @@
+var background = {
+  "port": null,
+  "message": {},
+  "receive": function (id, callback) {
+    if (id) {
+      background.message[id] = callback;
+    }
+  },
+  "connect": function (port) {
+    chrome.runtime.onMessage.addListener(background.listener); 
+    /*  */
+    if (port) {
+      background.port = port;
+      background.port.onMessage.addListener(background.listener);
+      background.port.onDisconnect.addListener(function () {
+        background.port = null;
+      });
+    }
+  },
+  "send": function (id, data) {
+    if (id) {
+      if (context !== "webapp") {
+        chrome.runtime.sendMessage({
+          "method": id,
+          "data": data,
+          "path": "interface-to-background"
+        }); 
+      }
+    }
+  },
+  "post": function (id, data) {
+    if (id) {
+      if (background.port) {
+        background.port.postMessage({
+          "method": id,
+          "data": data,
+          "port": background.port.name,
+          "path": "interface-to-background"
+        });
+      }
+    }
+  },
+  "listener": function (e) {
+    if (e) {
+      for (var id in background.message) {
+        if (background.message[id]) {
+          if ((typeof background.message[id]) === "function") {
+            if (e.path === "background-to-interface") {
+              if (e.method === id) {
+                background.message[id](e.data);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 var config = {
   "neighbor": {},
-  "number": {"moves": 0},
-  "resize": {"timeout": null},
+  "number": {
+    "moves": 0
+  },
   "addon": {
     "homepage": function () {
       return chrome.runtime.getManifest().homepage_url;
@@ -26,15 +86,59 @@ var config = {
       for (var i = 0; i < actions.length; i++) {
         actions[i].setAttribute("class", e);
       }
+      /*  */
+      if (e === "winner") {
+        window.setTimeout(function () {
+          window.alert("Congratulations, you did it! Please press on the - New Game - button to start a new game.");
+        }, 300);
+      }
     } else {
       for (var i = 0; i < actions.length; i++) {
         actions[i].removeAttribute("class");
       }
     }
   },
+  "resize": {
+    "timeout": null,
+    "method": function () {
+      if (config.port.name === "win") {
+        if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
+        config.resize.timeout = window.setTimeout(async function () {
+          var current = await chrome.windows.getCurrent();
+          /*  */
+          config.storage.write("interface.size", {
+            "top": current.top,
+            "left": current.left,
+            "width": current.width,
+            "height": current.height
+          });
+        }, 1000);
+      }
+    }
+  },
+  "port": {
+    "name": '',
+    "connect": function () {
+      config.port.name = "webapp";
+      var context = document.documentElement.getAttribute("context");
+      /*  */
+      if (chrome.runtime) {
+        if (chrome.runtime.connect) {
+          if (context !== config.port.name) {
+            if (document.location.search === "?win") config.port.name = "win";
+            background.connect(chrome.runtime.connect({"name": config.port.name}));
+          }
+        }
+      }
+      /*  */
+      document.documentElement.setAttribute("context", config.port.name);
+    }
+  },
   "storage": {
     "local": {},
-    "read": function (id) {return config.storage.local[id]},
+    "read": function (id) {
+      return config.storage.local[id];
+    },
     "load": function (callback) {
       chrome.storage.local.get(null, function (e) {
         config.storage.local = e;
@@ -53,47 +157,6 @@ var config = {
           chrome.storage.local.remove(id, function () {});
         }
       }
-    }
-  },
-  "game": {
-    "log": function (e) {
-      for (var i = 0; i < 9; i++) document.forms[0].elements[i].value = e[i];
-      document.forms[0].moves.value = config.number.moves;
-      config.game.over();
-      config.render();
-    },
-    "over": function () {
-      var a = config.pos[0] === 1;
-      var b = config.pos[1] === 2;
-      var c = config.pos[2] === 3;
-      var d = config.pos[3] === 4;
-      var e = config.pos[4] === 5;
-      var f = config.pos[5] === 6;
-      var g = config.pos[6] === 7;
-      var h = config.pos[7] === 8;
-      var i = config.pos[8] === 0;
-      /*  */
-      if (a && b && c && d && e && f && g && h && i) {
-        window.setTimeout(function () {config.reset("winner")}, 300);
-        window.alert("Congratulations, you did it! Please press on the - New Game - button to start a new game.");
-      }
-    },
-    "new": function () {
-      var x = 1;
-      for (var i = 0; i < 9; i++) config.pos[i] = 9;
-      for (var i = 0; i < 9; i++) {
-        randomnum = config.random();
-        if (randomnum === 9) randomnum = 8;
-        x = 1;
-        for (var j = 0; j < 9; j++) {
-          if (j === i) continue;
-          if (randomnum === config.pos[j]) {x = 0; break}
-        }
-        if (x == 0) {i--; continue}
-        config.pos[i] = randomnum;
-      }
-      config.number.moves = 0;
-      config.game.log(config.pos);
     }
   },
   "move": function (num) {
@@ -170,17 +233,74 @@ var config = {
     }
     /*  */
     config.pos = new config.init.array(9, 9, 9, 9, 9, 9, 9, 9, 9);
-    window.removeEventListener("load", config.load, false);
+    /*  */
     config.game.new();
+    window.removeEventListener("load", config.load, false);
+  },
+  "game": {
+    "log": function (e) {
+      for (var i = 0; i < 9; i++) {
+        document.forms[0].elements[i].value = e[i];
+      }
+      /*  */
+      document.forms[0].moves.value = config.number.moves;
+      config.game.over();
+      config.render();
+    },
+    "over": function () {
+      var a = config.pos[0] === 1;
+      var b = config.pos[1] === 2;
+      var c = config.pos[2] === 3;
+      var d = config.pos[3] === 4;
+      var e = config.pos[4] === 5;
+      var f = config.pos[5] === 6;
+      var g = config.pos[6] === 7;
+      var h = config.pos[7] === 8;
+      var i = config.pos[8] === 0;
+      /*  */
+      if (a && b && c && d && e && f && g && h && i) {
+        window.setTimeout(function () {
+          config.reset("winner");
+        }, 300);
+      }
+    },
+    "new": function () {
+      var x = 1;
+      for (var i = 0; i < 9; i++) {
+        config.pos[i] = 9;
+      }
+      /*  */
+      for (var i = 0; i < 9; i++) {
+        var rand = config.random();
+        if (rand === 9) {
+          rand = 8;
+        }
+        /*  */
+        x = 1;
+        /*  */
+        for (var j = 0; j < 9; j++) {
+          if (j === i) continue;
+          if (rand === config.pos[j]) {
+            x = 0; 
+            break;
+          }
+        }
+        /*  */
+        if (x == 0) {
+          i--; 
+          continue;
+        }
+        /*  */
+        config.pos[i] = rand;
+      }
+      /*  */
+      config.number.moves = 0;
+      config.game.log(config.pos);
+    }
   }
 };
 
-window.addEventListener("resize", function () {
-  if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
-  config.resize.timeout = window.setTimeout(function () {
-    config.storage.write("width", window.innerWidth || window.outerWidth);
-    config.storage.write("height", window.innerHeight || window.outerHeight);
-  }, 1000);
-}, false);
+config.port.connect();
 
 window.addEventListener("load", config.load, false);
+window.addEventListener("resize", config.resize.method, false);

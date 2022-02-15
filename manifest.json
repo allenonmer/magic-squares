@@ -1,14 +1,19 @@
 {
-  "version": "0.1.2",
-  "manifest_version": 2,
+  "version": "0.1.3",
+  "manifest_version": 3,
   "name": "Magic Squares",
   "offline_enabled": true,
   "permissions": ["storage"],
   "short_name": "magic-squares",
-  "background": {"scripts": ["lib/background.js"]},
   "description": "An easy-to-use and lite Magic Squares game",
   "homepage_url": "https://mybrowseraddon.com/magic-squares.html",
-  "browser_action": {
+  "commands": {
+    "_execute_action": {}
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
     "default_title": "Magic Squares",
     "default_icon": {
       "16": "data/icons/16.png",
