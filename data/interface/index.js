@@ -24,7 +24,9 @@ var background = {
           "method": id,
           "data": data,
           "path": "interface-to-background"
-        }); 
+        }, function () {
+          return chrome.runtime.lastError;
+        });
       }
     }
   },
@@ -42,7 +44,7 @@ var background = {
   },
   "listener": function (e) {
     if (e) {
-      for (var id in background.message) {
+      for (let id in background.message) {
         if (background.message[id]) {
           if ((typeof background.message[id]) === "function") {
             if (e.path === "background-to-interface") {
@@ -68,22 +70,23 @@ var config = {
     }
   },
   "random": function () {
-    var today = new Date();
-    var tmp = today.getTime();
+    const today = new Date();
+    const tmp = today.getTime();
+    /*  */
     return Math.round(Math.abs(Math.sin(tmp) * 1000000)) % 9;
   },
   "init": {
     "array": function () {
       this.length = config.init.array.arguments.length;
-      for (var i = 0; i < this.length; i++) {
+      for (let i = 0; i < this.length; i++) {
         this[i + 1] = config.init.array.arguments[i];
       }
     }
   },
   "reset": function (e) {
-    var actions = [...document.querySelectorAll("input[action]")];
+    const actions = [...document.querySelectorAll("input[action]")];
     if (e) {
-      for (var i = 0; i < actions.length; i++) {
+      for (let i = 0; i < actions.length; i++) {
         actions[i].setAttribute("class", e);
       }
       /*  */
@@ -93,7 +96,7 @@ var config = {
         }, 300);
       }
     } else {
-      for (var i = 0; i < actions.length; i++) {
+      for (let i = 0; i < actions.length; i++) {
         actions[i].removeAttribute("class");
       }
     }
@@ -104,7 +107,7 @@ var config = {
       if (config.port.name === "win") {
         if (config.resize.timeout) window.clearTimeout(config.resize.timeout);
         config.resize.timeout = window.setTimeout(async function () {
-          var current = await chrome.windows.getCurrent();
+          const current = await chrome.windows.getCurrent();
           /*  */
           config.storage.write("interface.size", {
             "top": current.top,
@@ -120,7 +123,7 @@ var config = {
     "name": '',
     "connect": function () {
       config.port.name = "webapp";
-      var context = document.documentElement.getAttribute("context");
+      const context = document.documentElement.getAttribute("context");
       /*  */
       if (chrome.runtime) {
         if (chrome.runtime.connect) {
@@ -148,7 +151,7 @@ var config = {
     "write": function (id, data) {
       if (id) {
         if (data !== '' && data !== null && data !== undefined) {
-          var tmp = {};
+          let tmp = {};
           tmp[id] = data;
           config.storage.local[id] = data;
           chrome.storage.local.set(tmp, function () {});
@@ -181,16 +184,17 @@ var config = {
     config.game.log(config.pos);
   },
   "render": function () {
-    var valid = function (e) {
-      var a = (e !== 2 && e !== 5 && e !== 8) && config.pos[e + 1] === 0;
-      var b = (e !== 0 && e !== 3 && e !== 6) && config.pos[e - 1] === 0;
-      var c = (e !== 0 && e !== 1 && e !== 2) && config.pos[e - 3] === 0;
-      var d = (e !== 6 && e !== 7 && e !== 8) && config.pos[e + 3] === 0;
+    const valid = function (e) {
+      const a = (e !== 2 && e !== 5 && e !== 8) && config.pos[e + 1] === 0;
+      const b = (e !== 0 && e !== 3 && e !== 6) && config.pos[e - 1] === 0;
+      const c = (e !== 0 && e !== 1 && e !== 2) && config.pos[e - 3] === 0;
+      const d = (e !== 6 && e !== 7 && e !== 8) && config.pos[e + 3] === 0;
+      /*  */
       return a || b || c || d;
     };
     /*  */
     config.reset(null);
-    var action = parseInt(document.querySelector("input[value='0']").getAttribute("action"));
+    const action = parseInt(document.querySelector("input[value='0']").getAttribute("action"));
     /*  */
     config.neighbor.top = document.querySelector("input[value='" + config.pos[action - 3] + "']");
     config.neighbor.left = document.querySelector("input[value='" + config.pos[action - 1] + "']");
@@ -203,30 +207,30 @@ var config = {
     if (config.neighbor.bottom && valid(action + 3)) config.neighbor.bottom.setAttribute("class", "neighbor");
   },
   "load": function () {
-    var reload = document.querySelector("#reload");
-    var support = document.querySelector("#support");
-    var submit = document.querySelector("#new-game");
-    var donation = document.querySelector("#donation");
-    var actions = [...document.querySelectorAll("input[action]")];
+    const reload = document.querySelector("#reload");
+    const support = document.querySelector("#support");
+    const submit = document.querySelector("#new-game");
+    const donation = document.querySelector("#donation");
+    const actions = [...document.querySelectorAll("input[action]")];
     /*  */
     reload.addEventListener("click", function () {
       document.location.reload();
     });
     /*  */
     support.addEventListener("click", function () {
-      var url = config.addon.homepage();
+      const url = config.addon.homepage();
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
     donation.addEventListener("click", function () {
-      var url = config.addon.homepage() + "?reason=support";
+      const url = config.addon.homepage() + "?reason=support";
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
     submit.addEventListener("click", config.game.new);
     /*  */
-    for (var i = 0; i < actions.length; i++) {
-      var action = actions[i];
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
       action.addEventListener("click", function () {
         config.move(parseInt(this.getAttribute("action")));
       });
@@ -239,7 +243,7 @@ var config = {
   },
   "game": {
     "log": function (e) {
-      for (var i = 0; i < 9; i++) {
+      for (let i = 0; i < 9; i++) {
         document.forms[0].elements[i].value = e[i];
       }
       /*  */
@@ -248,15 +252,15 @@ var config = {
       config.render();
     },
     "over": function () {
-      var a = config.pos[0] === 1;
-      var b = config.pos[1] === 2;
-      var c = config.pos[2] === 3;
-      var d = config.pos[3] === 4;
-      var e = config.pos[4] === 5;
-      var f = config.pos[5] === 6;
-      var g = config.pos[6] === 7;
-      var h = config.pos[7] === 8;
-      var i = config.pos[8] === 0;
+      const a = config.pos[0] === 1;
+      const b = config.pos[1] === 2;
+      const c = config.pos[2] === 3;
+      const d = config.pos[3] === 4;
+      const e = config.pos[4] === 5;
+      const f = config.pos[5] === 6;
+      const g = config.pos[6] === 7;
+      const h = config.pos[7] === 8;
+      const i = config.pos[8] === 0;
       /*  */
       if (a && b && c && d && e && f && g && h && i) {
         window.setTimeout(function () {
@@ -265,20 +269,20 @@ var config = {
       }
     },
     "new": function () {
-      var x = 1;
-      for (var i = 0; i < 9; i++) {
+      let x = 1;
+      for (let i = 0; i < 9; i++) {
         config.pos[i] = 9;
       }
       /*  */
-      for (var i = 0; i < 9; i++) {
-        var rand = config.random();
+      for (let i = 0; i < 9; i++) {
+        let rand = config.random();
         if (rand === 9) {
           rand = 8;
         }
         /*  */
         x = 1;
         /*  */
-        for (var j = 0; j < 9; j++) {
+        for (let j = 0; j < 9; j++) {
           if (j === i) continue;
           if (rand === config.pos[j]) {
             x = 0; 
