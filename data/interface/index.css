@@ -211,7 +211,7 @@ input[value="0"] {
 }
 
 .toolbar div svg {
-	fill: #777;
+	fill: #555;
 	pointer-events: none;
 	vertical-align: middle;
 }
@@ -246,4 +246,52 @@ input[value="0"] {
 
 html[context="webapp"] .toolbar {
   display: none;
+}
+
+html[theme='dark'], 
+html[theme='dark'] body {
+  color: #ebebeb;
+  color-scheme: dark;
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] table,
+html[theme='dark'] .description {
+  background-color: #1e1e1e;
+}
+
+html[theme='dark'] input[value='0'] {
+  background-color: #CE5200;
+}
+
+html[theme='dark'] input {
+  background-color: rgb(255 255 255 / 5%);
+}
+
+html[theme='dark'] .button input {
+  background-color: rgb(255 255 255 / 10%);
+}
+
+html[theme='dark'] .neighbor {
+  background-color: rgb(255 255 255 / 15%);
+}
+
+html[theme='dark'] .info input {
+  background-color: transparent;
+}
+
+html[theme='dark'] .info label,
+html[theme='dark'] .description,
+html[theme='dark'] input[type="button"] {
+  color: #ebebeb;
+}
+
+html[theme='dark'] input,
+html[theme='dark'] .controls,
+html[theme='dark'] .description {
+  border-color: rgb(255 255 255 / 25%);
+}
+
+html[theme='dark'] .toolbar div svg {
+  fill: #ebebeb;
 }

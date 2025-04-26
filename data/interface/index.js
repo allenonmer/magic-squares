@@ -207,6 +207,7 @@ var config = {
     if (config.neighbor.bottom && valid(action + 3)) config.neighbor.bottom.setAttribute("class", "neighbor");
   },
   "load": function () {
+    const theme = document.querySelector("#theme");
     const reload = document.querySelector("#reload");
     const support = document.querySelector("#support");
     const submit = document.querySelector("#new-game");
@@ -227,6 +228,14 @@ var config = {
       chrome.tabs.create({"url": url, "active": true});
     }, false);
     /*  */
+    theme.addEventListener("click", function () {
+      let attribute = document.documentElement.getAttribute("theme");
+      attribute = attribute === "dark" ? "light" : "dark";
+      /*  */
+      document.documentElement.setAttribute("theme", attribute);
+      config.storage.write("theme", attribute);
+    }, false);
+    /*  */
     submit.addEventListener("click", config.game.new);
     /*  */
     for (let i = 0; i < actions.length; i++) {
@@ -238,7 +247,7 @@ var config = {
     /*  */
     config.pos = new config.init.array(9, 9, 9, 9, 9, 9, 9, 9, 9);
     /*  */
-    config.game.new();
+    config.storage.load(config.game.new);
     window.removeEventListener("load", config.load, false);
   },
   "game": {
@@ -300,6 +309,9 @@ var config = {
       /*  */
       config.number.moves = 0;
       config.game.log(config.pos);
+      /*  */
+      const theme = config.storage.read("theme") !== undefined ? config.storage.read("theme") : "light";
+      document.documentElement.setAttribute("theme", theme !== undefined ? theme : "light");
     }
   }
 };
